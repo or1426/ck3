@@ -1,24 +1,141 @@
 <!DOCTYPE html>
 <html>
-<body>
+  <head>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!--
+        Including other packages like Vis Timeline or Vis Graph3D here won't work.
+        You need the peer build to do that.
+      -->
+    <script type="text/javascript">
+      function fix_name(name){
+          var new_name = name.replaceAll('_','').replaceAll('"','').toLowerCase();
+          return new_name.charAt(0).toUpperCase() + new_name.slice(1);
+      }
 
-<h2>Demo JavaScript in Body</h2>
+      function person_to_node(id, char_data){
+          var node = {id: id, label: fix_name(char_data['first_name'])};
+	  if(char_data["family_data"].hasOwnProperty("concubinist")){
+	      node['color'] = {'background':'pink'};
+	  }	 	  	     
+	  if(id == "7611"){
+	      node['color'] = {'background':'#00f000'};
+	  }
+          if(char_data.hasOwnProperty("secret_data")){
+	      if(node.hasOwnProperty('color')){
+		  node['color']['border'] = 'red';
+	      }else{
+		  node['color'] = {'border': 'red'};
+	      }
+	      
+          }
+          return node;
+      }      
+      
+      function make_graph(data){
+          // var nodes = new vis.DataSet();
 
-<p id="demo">A Paragraph</p>
+          // for (var key in json_data['char_data']) {
+          //     if (json_data['char_data'].hasOwnProperty(key)) {
+          //      nodes.add([{'id': key.toString(), 'label': json_data['char_data'][key]['first_name'].toString()}]);
+          //     }
+          // }
 
-<button type="button" onclick="myFunction()">Try it</button>
+          //   // create an array with edges
+          // // var edges = new vis.DataSet([
+          // //   { from: 1, to: 3 },
+          // //   { from: 1, to: 2 },
+          // //   { from: 2, to: 4 },
+          // //   { from: 2, to: 5 },
+          // //   { from: 3, to: 3 }
+          // // ]);
+          // var edges = new vis.DataSet();
 
-<script>
-  function myFunction() {
-      alert("hello");
-      const jsonData= require('https://or1426.github.io/ck3/ck3_data.json');
-      alert(jsonData["char_data"]["7611"].toString());
-      document.getElementById("demo").innerHTML = jsonData["char_data"][7611].toString();
-}
-</script>
+          // create an array with nodes
 
-</body>
-</html> 
+          // create an array with nodes
+          var nodes = []; //new vis.DataSet();
+
+          for(var key in data['char_data']){
+              if(data['char_data'].hasOwnProperty(key)){
+                  nodes.push(person_to_node(key, data['char_data'][key]))
+              }
+          }
+
+	  var council_positions = ["spouse", "chancellor",  "steward", "marshal", "spymaster", "priest"];
+	  
+          // create an array with edges
+          var edges = []; //new vis.DataSet();
+          for(var key in data['char_data']){
+              if(data['char_data'].hasOwnProperty(key)){
+                  //alert(data['char_data'][key].toString());
+                  if(('family_data' in data['char_data'][key]) && ('child' in data['char_data'][key]['family_data'])){
+                      var count = data['char_data'][key]['family_data']['child'].length;
+                      for(var i = 0; i < count; i++) {
+                          var child_id = data['char_data'][key]['family_data']['child'][i];
+                          edges.push({from: key, to: child_id,label:"child", color:'blue'});
+                      }
+                  }
+              }
+          }
+
+          for(var job_id in data['job_data']){
+              if(data['job_data'].hasOwnProperty(job_id)){
+                  if(data['job_data'].hasOwnProperty(job_id)){
+                      edges.push({from: data['job_data'][job_id]['court_owner'],
+                                  to: data['job_data'][job_id]['owner'],
+                                  label: council_positions[data['char_data'][data['job_data'][job_id]['court_owner']]['landed_data']['council'].indexOf(parseInt(job_id))],
+                                  color:'gray',
+                                  dashes:'true',
+                                  physics: 'false', smooth:{type:'continuous'}});
+                  }
+              }
+          }
 
 
+          // create a network
+          var container = document.getElementById("mynetwork");
+          var network_data = {
+              nodes: nodes,
+              edges: edges
+          };
+          var options = {edges:{arrows:{to:true}}};
+          var network = new vis.Network(container, network_data, options);
+          network.on("selectNode", function (params) {
+              var selectedNodeIDs = network.getSelection().nodes;
+              if(selectedNodeIDs.length > 0){
+                  var node = selectedNodeIDs[0];
+                  //alert("hello");
+                  //alert(data['char_data']['7611']);
+                  var strings = [node.toString() + ": " + fix_name(data['char_data'][node]['first_name'])];
+                  if(data['char_data'][node].hasOwnProperty("nickname")){
+                      strings[0] = strings[0] + " " + data['char_data'][node]['nickname'];
+                  }
+                  for(var key in data['char_data'][node]){
+                      if(data['char_data'][node].hasOwnProperty(key)){
+                          if(key != 'first_name' && key != 'nickname'){
+                              strings.push(key.toString() + ": " + JSON.stringify(data['char_data'][node][key]));
+                          }
+                      }
+                  }
+                  document.getElementById("mytextarea").value = strings.join('\n');//;
+              }
+          });
+      }
 
+      fetch("https://or1426.github.io/ck3/ck3_data.json").then(response => { return response.json();}).then(
+          data => make_graph(data));
+    </script>
+  </head>
+  <body>
+
+    <div style="display: table-row">
+      <div id="mynetwork" style="width: 800px; height: 600px; display: table-cell;"> </div>
+      <div id="mytextareacontainer" style="width: 600px; height: 600px; display: table-cell;">
+        <textarea id="mytextarea" name="mytextarea" readonly="true" wrap="hard" cols="80" style="overflow-y: scroll; height:600px;"> </textarea>
+
+      </div>
+    </div>
+
+
+  </body>
+</html>
