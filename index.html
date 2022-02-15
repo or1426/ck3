@@ -86,7 +86,7 @@
                                   label: council_positions[data['char_data'][data['job_data'][job_id]['court_owner']]['landed_data']['council'].indexOf(parseInt(job_id))],
                                   color:'gray',
                                   dashes:'true',
-                                  physics: 'false', smooth:{type:'continuous'}});
+                                  physics: 'true', smooth:{type:'continuous'}});
                   }
               }
           }
@@ -100,7 +100,7 @@
                                       label: "concubine",
                                       color:'gray',
                                       dashes:'true',
-                                      physics: 'false', smooth:{type:'continuous'}});
+                                      physics: 'true', smooth:{active: 'true', type:'straightCross',roundness:0.5}});
 		      }
 		  }
 	      }
