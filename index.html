@@ -91,6 +91,21 @@
               }
           }
 
+	  for(var char_id in data['char_data']){
+	      if(data['char_data'].hasOwnProperty(char_id)){
+		  if(data['char_data'][char_id].hasOwnProperty("family_data") && data['char_data'][char_id]["family_data"].hasOwnProperty("concubinist")){
+		      if(data['char_data'].hasOwnProperty(data['char_data'][char_id]["family_data"]["concubinist"])){
+			  edges.push({from: data['char_data'][char_id]["family_data"]["concubinist"],
+                                      to: char_id,
+                                      label: "concubine",
+                                      color:'gray',
+                                      dashes:'true',
+                                      physics: 'false', smooth:{type:'continuous'}});
+		      }
+		  }
+	      }
+	  }
+
 
           // create a network
           var container = document.getElementById("mynetwork");
@@ -113,11 +128,11 @@
                   for(var key in data['char_data'][node]){
                       if(data['char_data'][node].hasOwnProperty(key)){
                           if(key != 'first_name' && key != 'nickname'){
-                              strings.push(key.toString() + ": " + JSON.stringify(data['char_data'][node][key]));
+                              strings.push(key.toString() + ": " + JSON.stringify(data['char_data'][node][key],null, "\t"));
                           }
                       }
                   }
-                  document.getElementById("mytextarea").value = strings.join('\n');//;
+                  document.getElementById("mytextarea").innerHTML = strings.join('\n');//;
               }
           });
       }
@@ -129,26 +144,26 @@
   </head>
   <body>
 
-    <div id="maincontainer" style="display: table-row">
-      <div id="mynetwork" style="width: 800px; height: 600px; display: table-cell;"> </div>
-      <div id="mytextareacontainer" style="width: 600px; height: 600px; display: table-cell;">
-        <textarea id="mytextarea" name="mytextarea" readonly="true" wrap="hard" cols="80" style="overflow-y: scroll; height:600px;"> </textarea>
-
-      </div>
+    <div id="maincontainer" style="width:100%;height=100%">
+      <div id="mynetwork"> </div>
+      <div id="mytextarea"> </div>
     </div>
 
     <script>
+      //width: 600px; height: 600px; 
       var height = window.screen.availHeight;
       var width = window.screen.availWidth;
-      if(width < 1400){
-	  document.getElementById('mynetwork').setAttribute("style","width:"+width+"px");
-	  document.getElementById('mynetwork').setAttribute("style","height:"+height/2+"px");
-	  
-	  document.getElementById('mytextareacontainer').setAttribute("style","width:"+width+"px");
-	  document.getElementById('mytextareacontainer').setAttribute("style","height:"+height/2 + "px");
-
-	  document.getElementById("maincontainer").setAttribute("style","display: table-col");	  
+      if(width < height){
+	  document.getElementById("mynetwork").setAttribute("style","width: "+width+"px; height: "+width+"px;");
+	  document.getElementById("mytextarea").setAttribute("style", "width: "+width+"px; height: "+width+"px; overflow-x: scroll;overflow-y: scroll;white-space: pre;");
+      }else{
+	  var w1 = Math.floor(width*0.45);
+	  var w2 = Math.floor(width*0.55);
+	  var h = Math.floor(height*0.8);
+	  document.getElementById("mynetwork").setAttribute("style","width: "+w1+"px; height: "+h+"px; float: left;");
+	  document.getElementById("mytextarea").setAttribute("style","margin-left: "+w2+";height: " +h+"px; width:"+w1+"px; overflow-x: scroll;overflow-y: scroll;white-space: pre;");
       }
+      //<textarea id="mytextarea" name="mytextarea" readonly="true" style="overflow-y: scroll; height:600px;"> </textarea>
     </script>
 
 
