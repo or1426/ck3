@@ -124,17 +124,32 @@
 
       fetch("https://or1426.github.io/ck3/ck3_data.json").then(response => { return response.json();}).then(
           data => make_graph(data));
+      
     </script>
   </head>
   <body>
 
-    <div style="display: table-row">
+    <div id="maincontainer" style="display: table-row">
       <div id="mynetwork" style="width: 800px; height: 600px; display: table-cell;"> </div>
       <div id="mytextareacontainer" style="width: 600px; height: 600px; display: table-cell;">
         <textarea id="mytextarea" name="mytextarea" readonly="true" wrap="hard" cols="80" style="overflow-y: scroll; height:600px;"> </textarea>
 
       </div>
     </div>
+
+    <script>
+      var height = window.screen.availHeight;
+      var width = window.screen.availWidth;
+      if(width < 1400){
+	  document.getElementById('mynetwork').setAttribute("style","width:"+width+"px");
+	  document.getElementById('mynetwork').setAttribute("style","height:"+height/2+"px");
+	  
+	  document.getElementById('mytextareacontainer').setAttribute("style","width:"+width+"px");
+	  document.getElementById('mytextareacontainer').setAttribute("style","height:"+height/2 + "px");
+
+	  document.getElementById("maincontainer").setAttribute("style","display: table-col");	  
+      }
+    </script>
 
 
   </body>
